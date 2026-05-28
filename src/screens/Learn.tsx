@@ -1,45 +1,89 @@
 import { useEffect, useState } from "react";
 import { FactExpr } from "../components/FactExpr";
-import { DotsModel, NumberLine } from "../components/LearnVisuals";
+import { AdditionModel, ArrayModel, CommuteModel, SkipCount, TrickCard } from "../components/LearnVisuals";
 import { Mascot } from "../components/Mascot";
 import { TopBar } from "../components/TopBar";
 import { product } from "../domain/facts";
+import { isFactKnown, LEARN_ORDER, newFactorsFor } from "../domain/learnPath";
 import { explainFact } from "../helper/llmClient";
 import { playTap } from "../lib/sound";
 import { useGameStore } from "../store/useGameStore";
 import { useNav } from "../store/useNav";
 
-const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+/** Russian plural: forms = [one, few, many] (1 пример / 2 примера / 5 примеров). */
+function plural(n: number, forms: [string, string, string]): string {
+  const mod100 = n % 100;
+  const mod10 = n % 10;
+  if (mod10 === 1 && mod100 !== 11) return forms[0];
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return forms[1];
+  return forms[2];
+}
 
 export function Learn() {
   const settings = useGameStore((s) => s.settings);
   const go = useNav((s) => s.go);
 
-  const tables = settings.enabledTables.length ? settings.enabledTables : TABLES;
-  const [table, setTable] = useState(tables[0]);
-  const [b, setB] = useState(1);
+  const available = settings.enabledTables.length ? settings.enabledTables : [...LEARN_ORDER];
+  const tables = LEARN_ORDER.filter((t) => available.includes(t));
+
+  const [table, setTable] = useState<number>(tables[0] ?? 2);
+  const [pos, setPos] = useState(0);
+  const [showHow, setShowHow] = useState(false);
   const [tip, setTip] = useState<string | null>(null);
   const [loadingTip, setLoadingTip] = useState(false);
 
+  const max = settings.maxFactor;
+  const yellow = newFactorsFor(table, max);
+  const currentB = yellow[Math.min(pos, yellow.length - 1)] ?? 1;
+  const onLast = pos >= yellow.length - 1;
+
   useEffect(() => {
     setTip(null);
-  }, [table, b]);
+    setShowHow(false);
+  }, [table, pos]);
 
-  const max = settings.maxFactor;
-  const step = (delta: number) => () => {
+  const pickTable = (t: number) => () => {
     playTap();
-    setB((cur) => Math.min(max, Math.max(1, cur + delta)));
+    setTable(t);
+    setPos(0);
+  };
+
+  const pickFact = (b: number) => () => {
+    const i = yellow.indexOf(b);
+    if (i === -1) return; // white panel — already known, not drilled
+    playTap();
+    setPos(i);
+  };
+
+  const next = () => {
+    playTap();
+    if (!onLast) setPos((p) => p + 1);
+  };
+
+  const back = () => {
+    playTap();
+    if (pos > 0) setPos((p) => p - 1);
   };
 
   const askHelper = async () => {
     playTap();
     setLoadingTip(true);
     try {
-      setTip(await explainFact(table, b));
+      setTip(await explainFact(table, currentB));
     } finally {
       setLoadingTip(false);
     }
   };
+
+  const newCount = yellow.length;
+  const headline =
+    newCount === 0
+      ? "Ты уже знаешь всю таблицу! 🎉"
+      : `Нужно выучить всего ${newCount} ${plural(newCount, [
+          "новый пример",
+          "новых примера",
+          "новых примеров",
+        ])}!`;
 
   return (
     <div className="screen-pad">
@@ -47,56 +91,101 @@ export function Learn() {
 
       <div className="seg" style={{ flexWrap: "wrap", alignSelf: "center" }}>
         {tables.map((t) => (
-          <button
-            key={t}
-            className={t === table ? "on" : ""}
-            onClick={() => {
-              playTap();
-              setTable(t);
-              setB(1);
-            }}
-          >
+          <button key={t} className={t === table ? "on" : ""} onClick={pickTable(t)}>
             ×{t}
           </button>
         ))}
       </div>
 
       <div className="question">
+        <div className="qcard learn-head">
+          <TrickCard table={table} />
+          <p className="table-headline">{headline}</p>
+        </div>
+
+        <div className="fact-panels" role="list">
+          {Array.from({ length: max }).map((_, i) => {
+            const b = i + 1;
+            const known = isFactKnown(table, b);
+            const isCurrent = !known && b === currentB;
+            const note = b === 1 ? "это само число" : `= ${b} × ${table}`;
+            return (
+              <button
+                key={b}
+                role="listitem"
+                className={`fact-panel ${known ? "known" : "new"} ${isCurrent ? "on" : ""}`}
+                onClick={pickFact(b)}
+                disabled={known}
+                aria-label={`${table} умножить на ${b} равно ${product(table, b)}${known ? ", уже знаешь" : ", новый пример"}`}
+              >
+                <span className="fact-eq">
+                  {table} × {b} = <b>{product(table, b)}</b>
+                </span>
+                {known ? (
+                  <span className="fact-note">{note}</span>
+                ) : (
+                  <span className="fact-tag">учим</span>
+                )}
+                <span className="fact-mark" aria-hidden="true">
+                  {known ? "✓" : "🟡"}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         <div className="qcard">
-          <FactExpr a={table} b={b} answer={product(table, b)} />
-          <p className="subtitle" style={{ color: "var(--ink-soft)" }}>
-            Это {table} раз по {b}
-          </p>
-          <DotsModel a={table} b={b} />
-          <NumberLine a={table} b={b} />
+          <span className="focus-progress">
+            Новое: {Math.min(pos + 1, newCount)} / {newCount}
+          </span>
+          <FactExpr a={table} b={currentB} answer={product(table, currentB)} />
+
+          <button className="how-toggle" onClick={() => setShowHow((v) => !v)}>
+            {showHow ? "скрыть ▴" : "показать, как это работает ▾"}
+          </button>
+
+          {showHow ? (
+            <div className="how-body">
+              <AdditionModel a={table} b={currentB} />
+              <ArrayModel a={table} b={currentB} />
+              <SkipCount step={table} times={currentB} />
+              <CommuteModel a={table} b={currentB} />
+              <p className="subtitle" style={{ color: "var(--ink-soft)" }}>
+                {table} × {currentB} = {currentB} × {table} — ответ тот же. Выучил один — знаешь два!
+              </p>
+            </div>
+          ) : null}
+
+          <button className="btn blue" onClick={askHelper} disabled={loadingTip}>
+            {loadingTip ? "Думаю…" : "💡 Объясни, как запомнить"}
+          </button>
+
+          {tip ? (
+            <div className="helper">
+              <span style={{ fontSize: "var(--fs-lg)" }}>🦉</span>
+              <span className="txt">{tip}</span>
+            </div>
+          ) : null}
         </div>
 
         <div className="topbar" style={{ width: "100%", maxWidth: 560, margin: 0 }}>
-          <button className="btn ghost" onClick={step(-1)} disabled={b <= 1}>
+          <button className="btn ghost" onClick={back} disabled={pos === 0}>
             ← Назад
           </button>
-          <div className="pill" style={{ color: "var(--on-accent)" }}>
-            {b} / {max}
-          </div>
-          <button className="btn yellow" onClick={step(1)} disabled={b >= max}>
-            Дальше →
-          </button>
+          {onLast ? (
+            <div className="pill" style={{ color: "var(--on-accent)" }}>
+              Готово!
+            </div>
+          ) : (
+            <button className="btn yellow" onClick={next}>
+              Дальше →
+            </button>
+          )}
         </div>
 
-        <button className="btn blue" onClick={askHelper} disabled={loadingTip}>
-          {loadingTip ? "Думаю…" : "💡 Объясни, как запомнить"}
-        </button>
-
-        {tip ? (
-          <div className="helper">
-            <span style={{ fontSize: "var(--fs-lg)" }}>🦉</span>
-            <span className="txt">{tip}</span>
-          </div>
-        ) : null}
-
-        {b >= max ? (
+        {onLast ? (
           <div className="center-col">
-            <Mascot mood="cheer" say="Молодец! Теперь попробуй викторину." />
+            <Mascot mood="cheer" say="Молодец! Ты прошёл всю таблицу. Теперь попробуй викторину." />
             <button className="btn teal" onClick={() => go("quiz")}>
               ❓ В викторину!
             </button>

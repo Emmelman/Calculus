@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FactExpr } from "../components/FactExpr";
 import { Keypad } from "../components/Keypad";
+import { MascotSvg } from "../components/Mascot";
 import { TopBar } from "../components/TopBar";
 import { buildFacts, Fact, product, tableFacts } from "../domain/facts";
 import { systemRng } from "../domain/rng";
 import { buildItems, pickFact } from "../domain/scheduler";
 import { reward } from "../lib/reward";
+import { mascotById } from "../store/mascots";
 import { useGameStore } from "../store/useGameStore";
 import { useNav } from "../store/useNav";
 
@@ -15,6 +17,7 @@ const DURATION = 60;
 export function Speed() {
   const settings = useGameStore((s) => s.settings);
   const answer = useGameStore((s) => s.answer);
+  const skin = mascotById(useGameStore((s) => s.selectedMascot));
   const go = useNav((s) => s.go);
 
   const facts = useMemo(() => {
@@ -87,10 +90,13 @@ export function Speed() {
     nextQuestion();
   };
 
+  const mood = flash === "good" ? "cheer" : flash === "bad" ? "sad" : "idle";
+
   return (
     <div className="screen-pad">
       <TopBar onBack={finish} />
       <div className="play-head">
+        <MascotSvg skin={skin} mood={mood} className={`play-mascot ${mood}`} />
         <div className="pill">⏱ {Math.ceil(left)} c</div>
         <div className="pill">✅ {session.current.correct}</div>
         {combo >= 2 ? <div className="combo">🔥 ×{combo}</div> : null}

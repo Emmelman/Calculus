@@ -181,6 +181,14 @@ button {
   40% { transform: scale(1.18) rotate(6deg); }
   100% { transform: scale(1); }
 }
+.mascot.sad {
+  animation: sad-droop 0.5s ease;
+}
+@keyframes sad-droop {
+  0% { transform: translateY(0) scale(1); }
+  45% { transform: translateY(6px) scale(0.95); }
+  100% { transform: translateY(0) scale(1); }
+}
 
 /* ---------- Home ---------- */
 .home-hero {
@@ -201,6 +209,13 @@ button {
   display: flex;
   align-items: center;
   gap: 0.4em;
+}
+
+.section-hint {
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 700;
+  font-size: var(--fs-xs);
+  margin: -4px 0 var(--space-2);
 }
 
 .tables-grid {
@@ -227,6 +242,19 @@ button {
 .table-chip.on {
   background: linear-gradient(150deg, var(--c-teal), var(--c-blue));
   color: var(--on-accent);
+}
+.table-chip.off {
+  opacity: 0.62;
+  filter: grayscale(0.55);
+}
+.table-chip .chk {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  font-size: var(--fs-xs);
+  font-weight: 900;
+  color: var(--on-accent);
+  z-index: 1;
 }
 .table-chip .ring {
   position: absolute;
@@ -367,6 +395,19 @@ button {
   justify-content: space-between;
   gap: var(--space-2);
 }
+
+/* small mascot that reacts to each answer during play */
+.play-mascot {
+  width: clamp(52px, 15vw, 84px);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.22));
+}
+.play-mascot.idle { animation: bounce 1.6s ease-in-out infinite; }
+.play-mascot.cheer { animation: cheer 0.5s ease; }
+.play-mascot.sad { animation: sad-droop 0.5s ease; }
+.duel-mascot.cheer { animation: cheer 0.5s ease; }
+.duel-mascot.sad { animation: sad-droop 0.5s ease; }
 
 .question {
   flex: 1;
@@ -511,6 +552,192 @@ button {
 .numberline .step.hit {
   background: var(--c-teal);
   color: #fff;
+}
+.numberline .step.pop {
+  animation: pop-in 0.3s ease both;
+}
+@keyframes pop-in {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ---------- Learn: example picker ---------- */
+/* ---------- Learn: table panels (white/yellow method) ---------- */
+.learn-head { gap: var(--space-2); }
+.table-headline {
+  font-weight: 900;
+  font-size: var(--fs-md);
+  color: var(--c-purple);
+  text-align: center;
+  margin: 0;
+}
+.fact-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 560px;
+}
+.fact-panel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 0.5em 0.8em;
+  min-height: var(--tap);
+  border-radius: 14px;
+  font-weight: 800;
+  text-align: left;
+  transition: transform 0.1s ease;
+}
+.fact-panel:not(:disabled):active { transform: scale(0.98); }
+.fact-panel .fact-eq { font-size: var(--fs-md); color: var(--ink); }
+.fact-panel .fact-eq b { color: var(--c-purple); }
+.fact-panel .fact-note {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.fact-panel .fact-tag {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  font-weight: 900;
+  color: var(--ink);
+  background: rgba(0, 0, 0, 0.08);
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+}
+.fact-panel .fact-mark { font-size: var(--fs-sm); }
+.fact-panel.known {
+  background: var(--surface-soft);
+  opacity: 0.65;
+}
+.fact-panel.known .fact-eq,
+.fact-panel.known .fact-eq b { color: var(--ink-soft); }
+.fact-panel.new {
+  background: linear-gradient(150deg, #fff6cf, #ffe79a);
+  box-shadow: var(--shadow-pop);
+}
+.fact-panel.new.on {
+  outline: 3px solid var(--c-coral);
+  outline-offset: 1px;
+}
+
+/* ---------- Learn: focus card ---------- */
+.focus-progress {
+  font-weight: 900;
+  font-size: var(--fs-sm);
+  color: var(--c-coral);
+}
+.how-toggle {
+  font-weight: 800;
+  font-size: var(--fs-sm);
+  color: var(--c-blue);
+  background: transparent;
+  padding: 0.3em 0.6em;
+}
+.how-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 120px;
+  width: 100%;
+}
+
+/* Stage 1 — addition */
+.add-model {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+.add-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 900;
+  font-size: var(--fs-md);
+}
+.add-piece { display: inline-flex; align-items: center; gap: 6px; }
+.add-term {
+  min-width: 1.6em;
+  padding: 0.2em 0.45em;
+  border-radius: 10px;
+  background: var(--c-blue);
+  color: #fff;
+  text-align: center;
+  animation: pop-in 0.3s ease both;
+}
+.add-op { color: var(--ink-soft); }
+.add-sum {
+  min-width: 1.8em;
+  padding: 0.2em 0.5em;
+  border-radius: 10px;
+  background: var(--c-green);
+  color: #fff;
+}
+.add-collapse {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.add-collapse b { color: var(--c-coral); font-size: var(--fs-md); }
+
+/* Stage 2 — array (framed dots) */
+.array-model { display: flex; justify-content: center; }
+.dots-grid.framed {
+  padding: var(--space-2);
+  border: 3px dashed var(--c-teal);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+/* Stage 4 — commutative comparison */
+.dots-grid.mini { gap: 3px; }
+.dots-grid.mini .dot {
+  width: clamp(7px, 2.4vw, 12px);
+  height: clamp(7px, 2.4vw, 12px);
+}
+.commute-model {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.commute-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.commute-lab { font-weight: 900; font-size: var(--fs-sm); color: var(--c-purple); }
+.commute-eq { font-weight: 900; font-size: var(--fs-lg); color: var(--ink-soft); }
+
+/* Stage 5 — trick card */
+.trick-card {
+  background: linear-gradient(150deg, #fff6e0, #ffe9f3);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  width: 100%;
+  text-align: left;
+}
+.trick-title {
+  font-weight: 900;
+  font-size: var(--fs-md);
+  color: var(--c-purple);
+  margin-bottom: var(--space-1);
+}
+.trick-line {
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  margin: 4px 0;
 }
 
 /* ---------- Memory match ---------- */

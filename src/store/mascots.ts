@@ -1,5 +1,6 @@
-/** A purchasable mascot skin. Rendered as a parametrised inline SVG, so a new
- * skin is just a set of colours (and an optional accessory emoji) — no assets. */
+/** A purchasable mascot skin. Each id maps to its own hand-drawn inline-SVG
+ * character (see Mascot.tsx); the fields below colour that character — no assets.
+ * `accent` tints the signature part (fox tail, dragon spikes, unicorn mane, …). */
 export interface MascotSkin {
   id: string;
   name: string;
@@ -10,7 +11,7 @@ export interface MascotSkin {
   ear: string;
   cheek: string;
   badge: string;
-  accessory?: string;
+  accent?: string;
 }
 
 export const DEFAULT_MASCOT = "umnik";
@@ -26,6 +27,7 @@ export const MASCOTS: MascotSkin[] = [
     ear: "#6c5ce7",
     cheek: "#ff8fb3",
     badge: "#ff6b6b",
+    accent: "#4a3bbf",
   },
   {
     id: "fox",
@@ -37,6 +39,7 @@ export const MASCOTS: MascotSkin[] = [
     ear: "#ff6b35",
     cheek: "#ffb3a7",
     badge: "#c0392b",
+    accent: "#fff3e0",
   },
   {
     id: "cat",
@@ -48,6 +51,7 @@ export const MASCOTS: MascotSkin[] = [
     ear: "#ee5ad6",
     cheek: "#ff6fae",
     badge: "#a23bbf",
+    accent: "#ffd1ec",
   },
   {
     id: "dragon",
@@ -59,6 +63,7 @@ export const MASCOTS: MascotSkin[] = [
     ear: "#0fb96f",
     cheek: "#7bed9f",
     badge: "#e67e22",
+    accent: "#0a8f54",
   },
   {
     id: "robot",
@@ -66,11 +71,11 @@ export const MASCOTS: MascotSkin[] = [
     cost: 320,
     bodyTop: "#74b9ff",
     bodyBottom: "#3b6fd6",
-    belly: "#eaf2ff",
+    belly: "#dfeeff",
     ear: "#3b6fd6",
     cheek: "#a3c9ff",
     badge: "#feca57",
-    accessory: "⚙️",
+    accent: "#feca57",
   },
   {
     id: "unicorn",
@@ -82,7 +87,7 @@ export const MASCOTS: MascotSkin[] = [
     ear: "#b57bff",
     cheek: "#ff8fce",
     badge: "#ff6b6b",
-    accessory: "🦄",
+    accent: "#ff8fce",
   },
   {
     id: "king",
@@ -94,7 +99,7 @@ export const MASCOTS: MascotSkin[] = [
     ear: "#f0b429",
     cheek: "#ffcf8a",
     badge: "#c0392b",
-    accessory: "👑",
+    accent: "#e0556b",
   },
 ];
 

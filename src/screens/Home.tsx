@@ -33,6 +33,7 @@ export function Home() {
 
       <section>
         <h2 className="section-label">📚 Таблицы умножения</h2>
+        <p className="section-hint">Нажми, чтобы выбрать таблицы для игр. Кольцо — как ты их выучил.</p>
         <div className="tables-grid">
           {TABLES.map((t) => {
             const on = settings.enabledTables.includes(t);
@@ -40,18 +41,20 @@ export function Home() {
             return (
               <button
                 key={t}
-                className={`table-chip ${on ? "on" : ""}`}
+                className={`table-chip ${on ? "on" : "off"}`}
                 onClick={() => {
                   playTap();
                   toggleTable(t);
                 }}
                 aria-pressed={on}
+                aria-label={`Таблица умножения на ${t}, ${on ? "включена" : "выключена"}`}
               >
                 <span className="ring">
                   <ProgressRing value={frac} color={on ? "#ffffff" : "#1dd1a1"} />
                 </span>
                 <span className="lab">×{t}</span>
                 <span className="pct">{Math.round(frac * 100)}%</span>
+                <span className="chk" aria-hidden="true">{on ? "✓" : ""}</span>
               </button>
             );
           })}

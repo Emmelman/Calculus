@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FactExpr } from "../components/FactExpr";
+import { MascotSvg } from "../components/Mascot";
 import { TopBar } from "../components/TopBar";
 import { buildFacts, Fact, makeChoices, product, tableFacts } from "../domain/facts";
 import { makeRng, systemRng } from "../domain/rng";
 import { buildItems, pickFact } from "../domain/scheduler";
 import { reward } from "../lib/reward";
+import { mascotById } from "../store/mascots";
 import { useGameStore } from "../store/useGameStore";
 import { useNav } from "../store/useNav";
 
@@ -14,6 +16,7 @@ const TOTAL = 10;
 export function Quiz() {
   const settings = useGameStore((s) => s.settings);
   const answer = useGameStore((s) => s.answer);
+  const skin = mascotById(useGameStore((s) => s.selectedMascot));
   const go = useNav((s) => s.go);
 
   const facts = useMemo(() => {
@@ -77,11 +80,13 @@ export function Quiz() {
   };
 
   const correctValue = product(fact.a, fact.b);
+  const mood = picked === null ? "idle" : picked === correctValue ? "cheer" : "sad";
 
   return (
     <div className="screen-pad">
       <TopBar onBack={() => go("home")} />
       <div className="play-head">
+        <MascotSvg skin={skin} mood={mood} className={`play-mascot ${mood}`} />
         <div className="pill">Вопрос {index + 1}/{TOTAL}</div>
         <div className="pill">✅ {session.current.correct}</div>
       </div>

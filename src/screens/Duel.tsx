@@ -146,7 +146,11 @@ export function Duel() {
 
       <div className="duel-top">
         <div className="duel-fighter">
-          <MascotSvg skin={mascotById(selectedMascot)} className="duel-mascot" />
+          <MascotSvg
+            skin={mascotById(selectedMascot)}
+            mood={flash === "good" ? "cheer" : flash === "bad" ? "sad" : "idle"}
+            className={`duel-mascot ${flash === "good" ? "cheer" : flash === "bad" ? "sad" : ""}`}
+          />
           <div className="duel-name">Ты</div>
           <div className="duel-score">{pips(pScore, true)}</div>
         </div>
