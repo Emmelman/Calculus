@@ -5,6 +5,7 @@ import { Mascot } from "../components/Mascot";
 import { TopBar } from "../components/TopBar";
 import { product } from "../domain/facts";
 import { isFactKnown, LEARN_ORDER, newFactorsFor } from "../domain/learnPath";
+import { tableTrick } from "../domain/tricks";
 import { explainFact } from "../helper/llmClient";
 import { playTap } from "../lib/sound";
 import { useGameStore } from "../store/useGameStore";
@@ -69,7 +70,8 @@ export function Learn() {
     playTap();
     setLoadingTip(true);
     try {
-      setTip(await explainFact(table, currentB));
+      const trick = tableTrick(table).lines.join(" ");
+      setTip(await explainFact(table, currentB, trick));
     } finally {
       setLoadingTip(false);
     }

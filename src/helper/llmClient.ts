@@ -84,20 +84,24 @@ const MNEMONICS: Record<string, string> = {
   "5": "Пятёрка всегда заканчивается на 0 или 5 и равна половине от ×10.",
 };
 
-function fallbackExplain(a: number, b: number): string {
+function fallbackExplain(a: number, b: number, hint?: string): string {
   const ans = product(a, b);
-  const tip = MNEMONICS[String(a)] ?? MNEMONICS[String(b)];
   const base = `${a} × ${b} — это ${a} раз по ${b}. Сложим: ${Array.from({ length: Math.min(a, 5) }, () => b).join(" + ")}${a > 5 ? " + …" : ""} = ${ans}.`;
+  const tip = hint && hint.length > 0 ? hint : MNEMONICS[String(a)] ?? MNEMONICS[String(b)];
   return tip ? `${base} ${tip}` : base;
 }
 
-/** Kid-friendly explanation of a fact the child got wrong. Local fallback. */
-export async function explainFact(a: number, b: number): Promise<string> {
+/**
+ * Kid-friendly explanation of a fact. Pass `hint` (a validated memory trick
+ * from domain/tricks) to ground the LLM and prevent invented "rules". Falls
+ * back to a local template (using the same hint) when the helper is offline.
+ */
+export async function explainFact(a: number, b: number, hint?: string): Promise<string> {
   try {
-    const data = await postJson<{ text?: string }>("/api/helper/explain", { a, b });
+    const data = await postJson<{ text?: string }>("/api/helper/explain", { a, b, hint });
     if (typeof data.text === "string" && data.text.length > 0) return data.text;
   } catch {
     // fall through
   }
-  return fallbackExplain(a, b);
+  return fallbackExplain(a, b, hint);
 }
