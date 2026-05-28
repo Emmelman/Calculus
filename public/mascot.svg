@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Маскот Умножарик">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8e7bff"/>
+      <stop offset="1" stop-color="#6c5ce7"/>
+    </linearGradient>
+    <linearGradient id="belly" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff6e0"/>
+      <stop offset="1" stop-color="#ffe9f3"/>
+    </linearGradient>
+  </defs>
+  <!-- ears -->
+  <path d="M55 40 L70 78 L40 72 Z" fill="#6c5ce7"/>
+  <path d="M145 40 L130 78 L160 72 Z" fill="#6c5ce7"/>
+  <!-- body -->
+  <ellipse cx="100" cy="112" rx="68" ry="72" fill="url(#body)"/>
+  <ellipse cx="100" cy="124" rx="44" ry="50" fill="url(#belly)"/>
+  <!-- cheeks -->
+  <circle cx="58" cy="120" r="12" fill="#ff8fb3" opacity="0.85"/>
+  <circle cx="142" cy="120" r="12" fill="#ff8fb3" opacity="0.85"/>
+  <!-- eyes -->
+  <circle cx="78" cy="96" r="20" fill="#fff"/>
+  <circle cx="122" cy="96" r="20" fill="#fff"/>
+  <circle cx="82" cy="99" r="9" fill="#2b2350"/>
+  <circle cx="118" cy="99" r="9" fill="#2b2350"/>
+  <circle cx="85" cy="95" r="3" fill="#fff"/>
+  <circle cx="121" cy="95" r="3" fill="#fff"/>
+  <!-- beak / smile -->
+  <path d="M93 112 L107 112 L100 122 Z" fill="#feca57"/>
+  <path d="M84 132 Q100 148 116 132" fill="none" stroke="#2b2350" stroke-width="4" stroke-linecap="round"/>
+  <!-- multiply sign badge -->
+  <g transform="translate(132,150)">
+    <circle r="20" fill="#ff6b6b"/>
+    <path d="M-8 -8 L8 8 M8 -8 L-8 8" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  </g>
+</svg>

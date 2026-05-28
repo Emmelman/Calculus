@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Умножариум">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7b6cf6"/>
+      <stop offset="1" stop-color="#3a2a8c"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <g transform="translate(256,232)">
+    <circle r="120" fill="#feca57"/>
+    <path d="M-46 -46 L46 46 M46 -46 L-46 46" stroke="#ff6b6b" stroke-width="34" stroke-linecap="round"/>
+  </g>
+  <text x="256" y="430" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" font-size="92" fill="#ffffff">7×8</text>
+</svg>
