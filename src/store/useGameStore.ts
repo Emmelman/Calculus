@@ -3,11 +3,13 @@ import { persist } from "zustand/middleware";
 import { Fact, factDifficulty, factKey } from "../domain/facts";
 import { initStat, recordAnswer } from "../domain/mastery";
 import { newlyUnlocked } from "./achievements";
+import { DEFAULT_MASCOT, mascotById } from "./mascots";
 import {
   AnswerResult,
   GameState,
   levelForCoins,
   Settings,
+  walletCoins,
 } from "./types";
 
 const DEFAULT_SETTINGS: Settings = {
@@ -34,6 +36,10 @@ interface GameActions {
   answer: (fact: Fact, correct: boolean, ms: number) => AnswerResult;
   setSettings: (patch: Partial<Settings>) => void;
   toggleTable: (table: number) => void;
+  /** Buy a mascot skin if affordable and not owned. Returns true on success. */
+  buyMascot: (id: string) => boolean;
+  /** Equip an owned mascot skin. */
+  selectMascot: (id: string) => void;
   resetProgress: () => void;
 }
 
@@ -42,6 +48,7 @@ export type GameStore = GameState & GameActions;
 const initialState: GameState = {
   stats: {},
   coins: 0,
+  spent: 0,
   stars: 0,
   totalCorrect: 0,
   totalWrong: 0,
@@ -50,6 +57,8 @@ const initialState: GameState = {
   fastestMs: null,
   daily: {},
   unlocked: [],
+  ownedMascots: [DEFAULT_MASCOT],
+  selectedMascot: DEFAULT_MASCOT,
   step: 0,
   settings: DEFAULT_SETTINGS,
 };
@@ -126,6 +135,23 @@ export const useGameStore = create<GameStore>()(
         });
       },
 
+      buyMascot(id) {
+        const s = get();
+        if (s.ownedMascots.includes(id)) return false;
+        const skin = mascotById(id);
+        if (walletCoins(s) < skin.cost) return false;
+        set({
+          spent: s.spent + skin.cost,
+          ownedMascots: [...s.ownedMascots, id],
+          selectedMascot: id,
+        });
+        return true;
+      },
+
+      selectMascot(id) {
+        if (get().ownedMascots.includes(id)) set({ selectedMascot: id });
+      },
+
       resetProgress() {
         const keepSettings = get().settings;
         set({ ...initialState, settings: keepSettings });
@@ -138,6 +164,7 @@ export const useGameStore = create<GameStore>()(
       partialize: (s) => ({
         stats: s.stats,
         coins: s.coins,
+        spent: s.spent,
         stars: s.stars,
         totalCorrect: s.totalCorrect,
         totalWrong: s.totalWrong,
@@ -145,6 +172,8 @@ export const useGameStore = create<GameStore>()(
         fastestMs: s.fastestMs,
         daily: s.daily,
         unlocked: s.unlocked,
+        ownedMascots: s.ownedMascots,
+        selectedMascot: s.selectedMascot,
         step: s.step,
         settings: s.settings,
       }),

@@ -7,7 +7,9 @@ export type ScreenId =
   | "quiz"
   | "speed"
   | "memory"
+  | "duel"
   | "result"
+  | "shop"
   | "parent"
   | "settings";
 
@@ -43,7 +45,10 @@ export interface AnswerResult {
 
 export interface GameState {
   stats: Record<string, FactStat>;
+  /** Lifetime coins earned — never decreases; drives the player level. */
   coins: number;
+  /** Coins spent in the shop. Wallet = coins - spent. */
+  spent: number;
   /** Lifetime correct answers (the simple "stars" kids count). */
   stars: number;
   totalCorrect: number;
@@ -53,8 +58,17 @@ export interface GameState {
   fastestMs: number | null;
   daily: Record<string, DailyStat>;
   unlocked: string[];
+  /** Mascot skin ids the player owns. */
+  ownedMascots: string[];
+  /** Currently equipped mascot skin id. */
+  selectedMascot: string;
   step: number;
   settings: Settings;
+}
+
+/** Spendable coin balance (lifetime earned minus spent). */
+export function walletCoins(s: Pick<GameState, "coins" | "spent">): number {
+  return s.coins - s.spent;
 }
 
 export const COINS_PER_LEVEL = 150;

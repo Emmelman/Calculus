@@ -3,11 +3,13 @@ import { ScreenId } from "./types";
 
 /** Summary shown on the result screen after a game session. */
 export interface SessionResult {
-  mode: "quiz" | "speed" | "memory";
+  mode: "quiz" | "speed" | "memory" | "duel";
   correct: number;
   total: number;
   coins: number;
   bestStreak: number;
+  /** Duel outcome: true if the player beat the bot. */
+  won?: boolean;
 }
 
 export interface NavParams {

@@ -81,10 +81,18 @@ export function Home() {
             <span className="name">Найди пару</span>
             <span className="hint">Пример и ответ</span>
           </button>
+          <button className="mode-btn duel" onClick={start("duel")}>
+            <span className="emoji">⚔️</span>
+            <span className="name">Дуэль</span>
+            <span className="hint">Обгони робота!</span>
+          </button>
         </div>
       </section>
 
       <div className="topbar" style={{ marginTop: "auto", marginBottom: 0 }}>
+        <button className="btn ghost" onClick={start("shop")}>
+          🛍 Магазин
+        </button>
         <button className="btn ghost" onClick={start("parent")}>
           👨‍👩‍👧 Родителям
         </button>

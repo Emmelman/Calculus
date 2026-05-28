@@ -15,6 +15,7 @@ const MODE_LABEL: Record<string, string> = {
   quiz: "Викторина",
   speed: "Гонка",
   memory: "Найди пару",
+  duel: "Дуэль",
 };
 
 export function Result() {
@@ -26,8 +27,9 @@ export function Result() {
   const [revealed, setRevealed] = useState(false);
   const [loadingStory, setLoadingStory] = useState(false);
 
+  const isDuel = result?.mode === "duel";
   const ratio = result && result.total > 0 ? result.correct / result.total : 0;
-  const great = ratio >= 0.8;
+  const great = isDuel ? Boolean(result?.won) : ratio >= 0.8;
 
   useEffect(() => {
     if (great) {
@@ -47,8 +49,16 @@ export function Result() {
     );
   }
 
-  const mood: Mood = great ? "cheer" : ratio >= 0.4 ? "idle" : "sad";
-  const phrase = great ? "Супер! Ты молодец! 🎉" : ratio >= 0.4 ? "Хорошо! Идём дальше 💪" : "Не сдавайся, попробуем ещё!";
+  const mood: Mood = great ? "cheer" : !isDuel && ratio >= 0.4 ? "idle" : "sad";
+  const phrase = isDuel
+    ? result.won
+      ? "Победа! Ты обогнал робота! 🏆"
+      : "Почти! Давай реванш? 🤖"
+    : great
+      ? "Супер! Ты молодец! 🎉"
+      : ratio >= 0.4
+        ? "Хорошо! Идём дальше 💪"
+        : "Не сдавайся, попробуем ещё!";
 
   const fetchStory = async () => {
     setLoadingStory(true);
@@ -74,8 +84,10 @@ export function Result() {
           </h2>
           <div className="result-stats">
             <div className="stat">
-              <div className="v">{result.correct}/{result.total}</div>
-              <div className="k">правильно</div>
+              <div className="v">
+                {isDuel ? `${result.correct} : ${result.total - result.correct}` : `${result.correct}/${result.total}`}
+              </div>
+              <div className="k">{isDuel ? "счёт ты:робот" : "правильно"}</div>
             </div>
             <div className="stat">
               <div className="v">+{result.coins}</div>

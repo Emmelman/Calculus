@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { ToastHost } from "./components/Toast";
 import { setSoundEnabled } from "./lib/sound";
+import { Duel } from "./screens/Duel";
 import { Home } from "./screens/Home";
 import { Learn } from "./screens/Learn";
 import { Memory } from "./screens/Memory";
@@ -8,6 +9,7 @@ import { Parent } from "./screens/Parent";
 import { Quiz } from "./screens/Quiz";
 import { Result } from "./screens/Result";
 import { Settings } from "./screens/Settings";
+import { Shop } from "./screens/Shop";
 import { Speed } from "./screens/Speed";
 import { useGameStore } from "./store/useGameStore";
 import { useNav } from "./store/useNav";
@@ -20,7 +22,9 @@ const SCREENS: Record<ScreenId, () => JSX.Element> = {
   quiz: Quiz,
   speed: Speed,
   memory: Memory,
+  duel: Duel,
   result: Result,
+  shop: Shop,
   parent: Parent,
   settings: Settings,
 };
