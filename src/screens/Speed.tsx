@@ -26,6 +26,7 @@ export function Speed() {
     return list.length ? list : buildFacts();
   }, [settings.enabledTables, settings.maxFactor]);
 
+  const [started, setStarted] = useState(false);
   const [fact, setFact] = useState<Fact>(facts[0]);
   const [typed, setTyped] = useState("");
   const [combo, setCombo] = useState(0);
@@ -58,6 +59,10 @@ export function Speed() {
   }, [go]);
 
   useEffect(() => {
+    if (!started) return;
+    // Reset the per-question timer so time spent on the start screen doesn't
+    // count against the first answer.
+    startRef.current = Date.now();
     const id = setInterval(() => {
       setLeft((l) => {
         if (l <= 0.1) {
@@ -69,7 +74,7 @@ export function Speed() {
       });
     }, 100);
     return () => clearInterval(id);
-  }, [finish]);
+  }, [finish, started]);
 
   const submit = () => {
     if (typed === "" || done.current) return;
@@ -91,6 +96,26 @@ export function Speed() {
   };
 
   const mood = flash === "good" ? "cheer" : flash === "bad" ? "sad" : "idle";
+
+  if (!started) {
+    return (
+      <div className="screen-pad">
+        <TopBar onBack={() => go("home")} />
+        <div className="question">
+          <div className="center-col">
+            <MascotSvg skin={skin} mood="idle" className="play-mascot" />
+            <h1 className="title">🏁 Гонка на время</h1>
+            <p className="subtitle">
+              Реши как можно больше примеров за {DURATION} секунд! Готов?
+            </p>
+            <button className="btn block coral" onClick={() => setStarted(true)}>
+              🚦 Старт!
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="screen-pad">
