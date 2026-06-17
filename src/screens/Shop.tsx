@@ -3,7 +3,7 @@ import { TopBar } from "../components/TopBar";
 import { celebrate, useToast } from "../lib/fx";
 import { playTap, playWin } from "../lib/sound";
 import { MASCOTS } from "../store/mascots";
-import { walletCoins } from "../store/types";
+import { DEFAULT_REWARD_GOALS, walletCoins } from "../store/types";
 import { useGameStore } from "../store/useGameStore";
 import { useNav } from "../store/useNav";
 
@@ -14,6 +14,8 @@ export function Shop() {
   const selected = useGameStore((s) => s.selectedMascot);
   const buyMascot = useGameStore((s) => s.buyMascot);
   const selectMascot = useGameStore((s) => s.selectMascot);
+  const goals = useGameStore((s) => s.settings.rewardGoals) ?? DEFAULT_REWARD_GOALS;
+  const claimed = useGameStore((s) => s.claimedRewards);
   const go = useNav((s) => s.go);
   const toast = useToast((s) => s.show);
 
@@ -74,6 +76,40 @@ export function Shop() {
           );
         })}
       </div>
+
+      {goals.length > 0 ? (
+        <>
+          <h2 className="section-label" style={{ color: "var(--ink)", marginTop: "var(--space-4)" }}>
+            🏆 Большие цели
+          </h2>
+          <p className="subtitle">За эти монетки тебя ждёт настоящая награда!</p>
+          <div className="goals">
+            {goals.map((g) => {
+              const pct = Math.min(1, coins / g.cost);
+              const reached = coins >= g.cost;
+              const isClaimed = claimed.includes(g.id);
+              return (
+                <div key={g.id} className={`goal ${reached ? "reached" : ""} ${isClaimed ? "claimed" : ""}`}>
+                  <span className="goal-emoji" aria-hidden="true">{g.emoji}</span>
+                  <div className="goal-body">
+                    <div className="goal-title">{g.title}</div>
+                    <div className="bar">
+                      <div className="fill" style={{ width: `${pct * 100}%` }} />
+                    </div>
+                    <div className="goal-status">
+                      {isClaimed
+                        ? "✅ Получено!"
+                        : reached
+                          ? "🎉 Готово! Покажи родителям"
+                          : `${coins} / ${g.cost} 🪙`}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

@@ -6,8 +6,10 @@ import { newlyUnlocked } from "./achievements";
 import { DEFAULT_MASCOT, mascotById } from "./mascots";
 import {
   AnswerResult,
+  DEFAULT_REWARD_GOALS,
   GameState,
   levelForCoins,
+  RewardGoal,
   Settings,
   walletCoins,
 } from "./types";
@@ -19,6 +21,7 @@ const DEFAULT_SETTINGS: Settings = {
   parentPin: null,
   aiEnabled: false,
   aiTheme: "космос",
+  rewardGoals: DEFAULT_REWARD_GOALS,
 };
 
 function today(): string {
@@ -40,6 +43,10 @@ interface GameActions {
   buyMascot: (id: string) => boolean;
   /** Equip an owned mascot skin. */
   selectMascot: (id: string) => void;
+  /** Replace the parent-editable list of real-life reward goals. */
+  setRewardGoals: (goals: RewardGoal[]) => void;
+  /** Toggle whether a reward has been handed over in real life. */
+  toggleRewardClaimed: (id: string) => void;
   resetProgress: () => void;
 }
 
@@ -59,6 +66,7 @@ const initialState: GameState = {
   unlocked: [],
   ownedMascots: [DEFAULT_MASCOT],
   selectedMascot: DEFAULT_MASCOT,
+  claimedRewards: [],
   step: 0,
   settings: DEFAULT_SETTINGS,
 };
@@ -152,6 +160,18 @@ export const useGameStore = create<GameStore>()(
         if (get().ownedMascots.includes(id)) set({ selectedMascot: id });
       },
 
+      setRewardGoals(goals) {
+        set((s) => ({ settings: { ...s.settings, rewardGoals: goals } }));
+      },
+
+      toggleRewardClaimed(id) {
+        set((s) => ({
+          claimedRewards: s.claimedRewards.includes(id)
+            ? s.claimedRewards.filter((r) => r !== id)
+            : [...s.claimedRewards, id],
+        }));
+      },
+
       resetProgress() {
         const keepSettings = get().settings;
         set({ ...initialState, settings: keepSettings });
@@ -174,9 +194,21 @@ export const useGameStore = create<GameStore>()(
         unlocked: s.unlocked,
         ownedMascots: s.ownedMascots,
         selectedMascot: s.selectedMascot,
+        claimedRewards: s.claimedRewards,
         step: s.step,
         settings: s.settings,
       }),
+      // Deep-merge `settings` so fields added in newer versions (e.g.
+      // rewardGoals) fall back to defaults instead of being wiped out when an
+      // older persisted blob lacks them. Top-level keys keep the default merge.
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<GameState>;
+        return {
+          ...current,
+          ...p,
+          settings: { ...current.settings, ...(p.settings ?? {}) },
+        };
+      },
     },
   ),
 );

@@ -19,6 +19,26 @@ export interface DailyStat {
   coins: number;
 }
 
+/**
+ * A real-life reward the child works toward (e.g. "ride a quad bike with dad").
+ * A milestone: unlocked when lifetime coins reach `cost`. It does NOT spend
+ * coins — it is a goal the parent grants in real life. Parent-editable.
+ */
+export interface RewardGoal {
+  id: string;
+  emoji: string;
+  title: string;
+  /** Lifetime coins needed to unlock this reward. */
+  cost: number;
+}
+
+/** Family-specific defaults; the parent can edit these on the Parent screen. */
+export const DEFAULT_REWARD_GOALS: RewardGoal[] = [
+  { id: "quad", emoji: "🛵", title: "Прокатиться на квадроцикле с папой", cost: 2000 },
+  { id: "dino-small", emoji: "🦖", title: "Маленький динозавр", cost: 3500 },
+  { id: "dino-big", emoji: "🦕", title: "Большой динозавр", cost: 5000 },
+];
+
 export interface Settings {
   /** Largest second factor (10 or 12). */
   maxFactor: number;
@@ -31,6 +51,8 @@ export interface Settings {
   aiEnabled: boolean;
   /** Theme for AI story problems (космос, динозавры, …). */
   aiTheme: string;
+  /** Real-life reward milestones, editable by the parent. */
+  rewardGoals: RewardGoal[];
 }
 
 /** Outcome of recording a single answer — drives reward animations. */
@@ -62,6 +84,8 @@ export interface GameState {
   ownedMascots: string[];
   /** Currently equipped mascot skin id. */
   selectedMascot: string;
+  /** Reward-goal ids the parent has marked as handed over in real life. */
+  claimedRewards: string[];
   step: number;
   settings: Settings;
 }

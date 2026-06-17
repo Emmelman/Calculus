@@ -137,6 +137,55 @@ app.post("/api/helper/explain", async (req, res) => {
   }
 });
 
+app.post("/api/helper/ask", async (req, res) => {
+  const { a, b } = req.body ?? {};
+  if (!validFactor(a) || !validFactor(b)) {
+    return res.status(400).json({ error: "a and b must be integers 1..12" });
+  }
+  if (!API_KEY) return res.status(503).json({ error: "ai disabled" });
+
+  const question = typeof req.body?.question === "string" ? req.body.question.trim().slice(0, 300) : "";
+  if (!question) return res.status(400).json({ error: "question is required" });
+
+  const answer = a * b;
+  try {
+    const content = await chatCompletion({
+      apiKey: API_KEY,
+      baseUrl: BASE_URL,
+      model: MODEL,
+      temperature: 0.4,
+      messages: [
+        {
+          role: "system",
+          content:
+            "Ты — добрый учитель для ребёнка 7–9 лет, помогаешь учить таблицу умножения. " +
+            "Ребёнок задаёт вопрос своими словами (его могли надиктовать голосом, возможны ошибки — " +
+            "пойми смысл). Ответь коротко, тепло и просто, 2–4 предложения, только по-русски, без " +
+            "markdown и без эмодзи. " +
+            "СТРОГИЕ ПРАВИЛА: " +
+            "1) Вся арифметика верная; если называешь ответ примера — он должен совпадать с данным. " +
+            "2) Не выдумывай «правил» и связей между цифрами; объясняй через сложение (a раз по b) " +
+            "или перестановку множителей (a×b = b×a). " +
+            "3) Только добрый безопасный контент. Если вопрос не про математику или непонятен — мягко " +
+            "верни ребёнка к примеру и предложи помощь с ним.",
+        },
+        {
+          role: "user",
+          content:
+            `Ребёнок сейчас разбирает пример ${a} × ${b} = ${answer} (это верный ответ). ` +
+            `Его вопрос: «${question}». Ответь ребёнку.`,
+        },
+      ],
+    });
+    log("ask.ok", { a, b });
+    return res.json({ text: content.trim() });
+  } catch (err) {
+    const msg = err instanceof OpenRouterError ? err.message : String(err);
+    log("ask.error", { error: msg.slice(0, 160) });
+    return res.status(502).json({ error: "helper failed" });
+  }
+});
+
 app.listen(PORT, () => {
   log("server.start", { port: PORT, ai: Boolean(API_KEY), model: API_KEY ? MODEL : null });
 });

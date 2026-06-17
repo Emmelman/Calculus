@@ -45,4 +45,16 @@ export default defineConfig({
       },
     },
   },
+  // The built-app preview must proxy /api too, otherwise the helper 404s and
+  // the app silently falls back to its offline templates (a "clunky" helper).
+  preview: {
+    host: true,
+    port: 4175,
+    proxy: {
+      "/api": {
+        target: process.env.HELPER_URL ?? "http://localhost:8799",
+        changeOrigin: true,
+      },
+    },
+  },
 });

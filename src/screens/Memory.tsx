@@ -8,7 +8,7 @@ import { useGameStore } from "../store/useGameStore";
 import { useNav } from "../store/useNav";
 
 const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-const PAIRS = 6;
+const PAIR_OPTIONS = [4, 6, 8];
 
 interface Card {
   id: string;
@@ -23,20 +23,24 @@ export function Memory() {
   const answer = useGameStore((s) => s.answer);
   const go = useNav((s) => s.go);
 
+  // Number of pairs to play; null until the child picks a grid size.
+  const [pairs, setPairs] = useState<number | null>(null);
+
   const cards = useMemo<Card[]>(() => {
+    if (pairs === null) return [];
     const tables = settings.enabledTables.length ? settings.enabledTables : TABLES;
     const all = tables.flatMap((t) => tableFacts(t, settings.maxFactor));
     const pool = all.length ? all : buildFacts();
     const st = useGameStore.getState();
-    const chosen = pickBatch(buildItems(pool, st.stats), PAIRS, st.step, systemRng);
+    const chosen = pickBatch(buildItems(pool, st.stats), pairs, st.step, systemRng);
     const made = chosen.flatMap((f, pid) => [
       { id: `e${pid}`, pairId: pid, kind: "expr" as const, label: `${f.a}×${f.b}`, fact: f },
       { id: `a${pid}`, pairId: pid, kind: "ans" as const, label: String(product(f.a, f.b)), fact: f },
     ]);
     return shuffle(systemRng, made);
-    // Board is built once per mount.
+    // Board is built once per chosen grid size.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [pairs]);
 
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<Set<number>>(new Set());
@@ -85,6 +89,27 @@ export function Memory() {
       }, 750);
     }
   };
+
+  if (pairs === null) {
+    return (
+      <div className="screen-pad">
+        <TopBar onBack={() => go("home")} />
+        <div className="question">
+          <div className="center-col">
+            <h1 className="title">🃏 Найди пару</h1>
+            <p className="subtitle">Сколько пар найдём?</p>
+            <div className="start-options">
+              {PAIR_OPTIONS.map((n) => (
+                <button key={n} className="btn teal" onClick={() => setPairs(n)}>
+                  {n} пар{n === 4 ? "ы" : ""}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="screen-pad">

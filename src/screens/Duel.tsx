@@ -42,6 +42,7 @@ export function Duel() {
     return list.length ? list : buildFacts();
   }, [settings.enabledTables, settings.maxFactor]);
 
+  const [started, setStarted] = useState(false);
   const [fact, setFact] = useState<Fact>(facts[0]);
   const [typed, setTyped] = useState("");
   const [pScore, setPScore] = useState(0);
@@ -88,6 +89,7 @@ export function Duel() {
   }, [go]);
 
   useEffect(() => {
+    if (!started) return;
     nextQuestion();
     const id = setInterval(() => {
       if (done.current) return;
@@ -108,7 +110,7 @@ export function Duel() {
     }, 100);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [started]);
 
   const submit = () => {
     if (typed === "" || done.current) return;
@@ -135,6 +137,36 @@ export function Duel() {
     Array.from({ length: WIN }).map((_, i) => (
       <span key={i} className={`pip ${i < value ? "on" : ""} ${mine ? "mine" : ""}`} />
     ));
+
+  if (!started) {
+    return (
+      <div className="screen-pad">
+        <TopBar onBack={() => go("home")} />
+        <div className="question">
+          <div className="center-col">
+            <h1 className="title">⚔️ Дуэль на время</h1>
+            <div className="duel-top">
+              <div className="duel-fighter">
+                <MascotSvg skin={mascotById(selectedMascot)} className="duel-mascot" />
+                <div className="duel-name">Ты</div>
+              </div>
+              <div className="vs">VS</div>
+              <div className="duel-fighter">
+                <MascotSvg skin={mascotById(BOT_SKIN)} className="duel-mascot" />
+                <div className="duel-name">Робот</div>
+              </div>
+            </div>
+            <p className="subtitle">
+              Кто первым наберёт {WIN} очков? У тебя {DURATION} секунд.
+            </p>
+            <button className="btn block coral" onClick={() => setStarted(true)}>
+              🚦 Старт!
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="screen-pad">

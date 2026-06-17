@@ -105,3 +105,18 @@ export async function explainFact(a: number, b: number, hint?: string): Promise<
   }
   return fallbackExplain(a, b, hint);
 }
+
+/**
+ * Answer a child's free-form question about the fact `a × b` (the question may
+ * be dictated via the device keyboard's voice input). Falls back to a plain
+ * addition explanation when the helper is offline.
+ */
+export async function askHelper(a: number, b: number, question: string): Promise<string> {
+  try {
+    const data = await postJson<{ text?: string }>("/api/helper/ask", { a, b, question });
+    if (typeof data.text === "string" && data.text.length > 0) return data.text;
+  } catch {
+    // fall through
+  }
+  return fallbackExplain(a, b);
+}

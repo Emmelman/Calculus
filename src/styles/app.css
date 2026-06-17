@@ -950,6 +950,98 @@ button {
   animation: shake 0.5s ease;
 }
 
+/* ---------- Start-screen option buttons (quiz count, grid size) ---------- */
+.start-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+.start-options .btn { min-width: 88px; }
+
+/* ---------- Ask-the-helper free-text row ---------- */
+.ask-row {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+  align-items: stretch;
+}
+.ask-input {
+  flex: 1;
+  min-width: 0;
+  border: 2px solid rgba(43, 35, 80, 0.15);
+  border-radius: var(--radius);
+  padding: 0.6em 0.8em;
+  font: inherit;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  background: var(--surface);
+}
+.ask-input:focus { outline: none; border-color: var(--c-purple); }
+.ask-send { white-space: nowrap; }
+
+/* ---------- Reward goals (shop) ---------- */
+.goals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+.goal {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  box-shadow: var(--shadow-pop);
+}
+.goal.reached { background: linear-gradient(150deg, #fff6e0, #ffe9f3); }
+.goal.claimed { opacity: 0.7; }
+.goal-emoji { font-size: var(--fs-xl); line-height: 1; }
+.goal-body { flex: 1; min-width: 0; }
+.goal-title { font-weight: 900; color: var(--ink); font-size: var(--fs-sm); }
+.goal .bar {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(43, 35, 80, 0.12);
+  overflow: hidden;
+  margin: 6px 0;
+}
+.goal .fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--c-yellow), var(--c-coral));
+  transition: width 0.4s ease;
+}
+.goal.reached .fill { background: var(--c-green); }
+.goal-status { font-size: var(--fs-xs); font-weight: 700; color: var(--ink-soft); }
+
+/* ---------- Reward editor (parent) ---------- */
+.reward-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.reward-edit {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.reward-edit input {
+  border: 2px solid rgba(43, 35, 80, 0.15);
+  border-radius: 12px;
+  padding: 0.45em 0.6em;
+  font: inherit;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  background: var(--surface);
+}
+.reward-edit input:focus { outline: none; border-color: var(--c-purple); }
+.reward-emoji { width: 3em; text-align: center; }
+.reward-title { flex: 1; min-width: 120px; }
+.reward-cost { width: 6em; }
+.reward-claim { padding: 0.45em 0.8em; }
+.reward-del { padding: 0.45em 0.7em; color: var(--c-coral); }
+
 /* Tablet & up: roomier layout */
 @media (min-width: 768px) {
   .home-hero { justify-content: flex-start; text-align: left; }

@@ -6,7 +6,7 @@ import { TopBar } from "../components/TopBar";
 import { product } from "../domain/facts";
 import { isFactKnown, LEARN_ORDER, newFactorsFor } from "../domain/learnPath";
 import { tableTrick } from "../domain/tricks";
-import { explainFact } from "../helper/llmClient";
+import { askHelper, explainFact } from "../helper/llmClient";
 import { playTap } from "../lib/sound";
 import { useGameStore } from "../store/useGameStore";
 import { useNav } from "../store/useNav";
@@ -25,13 +25,18 @@ export function Learn() {
   const go = useNav((s) => s.go);
 
   const available = settings.enabledTables.length ? settings.enabledTables : [...LEARN_ORDER];
-  const tables = LEARN_ORDER.filter((t) => available.includes(t));
+  // Chips are shown in plain ascending order (×2, ×3, … ×10) — the numeric
+  // order a child expects. The pedagogical LEARN_ORDER still drives which facts
+  // count as already-known (white panels), it just isn't the display order.
+  const tables = [...available].sort((a, b) => a - b);
 
   const [table, setTable] = useState<number>(tables[0] ?? 2);
   const [pos, setPos] = useState(0);
   const [showHow, setShowHow] = useState(false);
   const [tip, setTip] = useState<string | null>(null);
   const [loadingTip, setLoadingTip] = useState(false);
+  const [question, setQuestion] = useState("");
+  const [asking, setAsking] = useState(false);
 
   const max = settings.maxFactor;
   const yellow = newFactorsFor(table, max);
@@ -41,6 +46,7 @@ export function Learn() {
   useEffect(() => {
     setTip(null);
     setShowHow(false);
+    setQuestion("");
   }, [table, pos]);
 
   const pickTable = (t: number) => () => {
@@ -66,7 +72,7 @@ export function Learn() {
     if (pos > 0) setPos((p) => p - 1);
   };
 
-  const askHelper = async () => {
+  const explain = async () => {
     playTap();
     setLoadingTip(true);
     try {
@@ -74,6 +80,18 @@ export function Learn() {
       setTip(await explainFact(table, currentB, trick));
     } finally {
       setLoadingTip(false);
+    }
+  };
+
+  const ask = async () => {
+    const q = question.trim();
+    if (!q || asking) return;
+    playTap();
+    setAsking(true);
+    try {
+      setTip(await askHelper(table, currentB, q));
+    } finally {
+      setAsking(false);
     }
   };
 
@@ -158,9 +176,32 @@ export function Learn() {
             </div>
           ) : null}
 
-          <button className="btn blue" onClick={askHelper} disabled={loadingTip}>
+          <button className="btn blue" onClick={explain} disabled={loadingTip || asking}>
             {loadingTip ? "Думаю…" : "💡 Объясни, как запомнить"}
           </button>
+
+          <div className="ask-row">
+            <input
+              className="ask-input"
+              type="text"
+              inputMode="text"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") ask();
+              }}
+              placeholder="Спроси совёнка… (можно надиктовать 🎤 на клавиатуре)"
+              maxLength={300}
+              aria-label="Задай вопрос помощнику"
+            />
+            <button
+              className="btn teal ask-send"
+              onClick={ask}
+              disabled={asking || loadingTip || question.trim() === ""}
+            >
+              {asking ? "…" : "Спросить"}
+            </button>
+          </div>
 
           {tip ? (
             <div className="helper">

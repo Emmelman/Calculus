@@ -3,7 +3,7 @@ import { Keypad } from "../components/Keypad";
 import { TopBar } from "../components/TopBar";
 import { factKey } from "../domain/facts";
 import { initStat, masteryFraction } from "../domain/mastery";
-import { levelForCoins } from "../store/types";
+import { DEFAULT_REWARD_GOALS, levelForCoins } from "../store/types";
 import { hardestFacts } from "../store/selectors";
 import { useGameStore } from "../store/useGameStore";
 import { useNav } from "../store/useNav";
@@ -18,7 +18,17 @@ function cellColor(frac: number): string {
 export function Parent() {
   const store = useGameStore();
   const go = useNav((s) => s.go);
-  const { settings, stats, totalCorrect, totalWrong, bestStreak, coins, daily } = store;
+  const { settings, stats, totalCorrect, totalWrong, bestStreak, coins, daily, claimedRewards } = store;
+  const goals = settings.rewardGoals ?? DEFAULT_REWARD_GOALS;
+
+  const updateGoal = (id: string, patch: Partial<(typeof goals)[number]>) =>
+    store.setRewardGoals(goals.map((g) => (g.id === id ? { ...g, ...patch } : g)));
+  const addGoal = () =>
+    store.setRewardGoals([
+      ...goals,
+      { id: `g${Date.now()}`, emoji: "🎁", title: "Новая награда", cost: 1000 },
+    ]);
+  const removeGoal = (id: string) => store.setRewardGoals(goals.filter((g) => g.id !== id));
 
   const [pinInput, setPinInput] = useState("");
   const [unlocked, setUnlocked] = useState(settings.parentPin === null);
@@ -133,6 +143,67 @@ export function Parent() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="card">
+        <h2 className="section-label" style={{ color: "var(--ink)" }}>🏆 Награды за монеты</h2>
+        <p className="subtitle" style={{ color: "var(--ink-soft)" }}>
+          Настоящие цели, к которым стремится ребёнок. Прогресс считается по всем заработанным
+          монетам. «Выдать» — отметить, что награда вручена в жизни.
+        </p>
+        <div className="reward-list">
+          {goals.map((g) => {
+            const reached = coins >= g.cost;
+            const isClaimed = claimedRewards.includes(g.id);
+            return (
+              <div key={g.id} className="reward-edit">
+                <input
+                  className="reward-emoji"
+                  value={g.emoji}
+                  maxLength={4}
+                  onChange={(e) => updateGoal(g.id, { emoji: e.target.value })}
+                  aria-label="Эмодзи награды"
+                />
+                <input
+                  className="reward-title"
+                  value={g.title}
+                  maxLength={60}
+                  onChange={(e) => updateGoal(g.id, { title: e.target.value })}
+                  aria-label="Название награды"
+                />
+                <input
+                  className="reward-cost"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  step={100}
+                  value={g.cost}
+                  onChange={(e) =>
+                    updateGoal(g.id, { cost: Math.max(0, Math.floor(Number(e.target.value) || 0)) })
+                  }
+                  aria-label="Порог в монетах"
+                />
+                <button
+                  className={`btn ${isClaimed ? "teal" : "ghost"} reward-claim`}
+                  disabled={!reached && !isClaimed}
+                  onClick={() => store.toggleRewardClaimed(g.id)}
+                >
+                  {isClaimed ? "Выдано ✅" : "Выдать"}
+                </button>
+                <button
+                  className="btn ghost reward-del"
+                  onClick={() => removeGoal(g.id)}
+                  aria-label="Удалить награду"
+                >
+                  ✕
+                </button>
+              </div>
+            );
+          })}
+        </div>
+        <button className="btn teal" onClick={addGoal} style={{ marginTop: "var(--space-2)" }}>
+          + Добавить награду
+        </button>
       </div>
 
       <button

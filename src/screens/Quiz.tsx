@@ -11,7 +11,7 @@ import { useGameStore } from "../store/useGameStore";
 import { useNav } from "../store/useNav";
 
 const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-const TOTAL = 10;
+const QUESTION_COUNTS = [5, 10, 15, 20];
 
 export function Quiz() {
   const settings = useGameStore((s) => s.settings);
@@ -25,6 +25,8 @@ export function Quiz() {
     return list.length ? list : buildFacts();
   }, [settings.enabledTables, settings.maxFactor]);
 
+  // Chosen number of questions; null until the child picks one (start screen).
+  const [total, setTotal] = useState<number | null>(null);
   const [index, setIndex] = useState(0);
   const [fact, setFact] = useState<Fact>(facts[0]);
   const [choices, setChoices] = useState<number[]>([]);
@@ -62,12 +64,12 @@ export function Quiz() {
     session.current.bestStreak = Math.max(session.current.bestStreak, res.streak);
 
     setTimeout(() => {
-      if (index + 1 >= TOTAL) {
+      if (index + 1 >= (total ?? QUESTION_COUNTS[1])) {
         go("result", {
           result: {
             mode: "quiz",
             correct: session.current.correct,
-            total: TOTAL,
+            total: total ?? QUESTION_COUNTS[1],
             coins: session.current.coins,
             bestStreak: session.current.bestStreak,
           },
@@ -82,12 +84,34 @@ export function Quiz() {
   const correctValue = product(fact.a, fact.b);
   const mood = picked === null ? "idle" : picked === correctValue ? "cheer" : "sad";
 
+  if (total === null) {
+    return (
+      <div className="screen-pad">
+        <TopBar onBack={() => go("home")} />
+        <div className="question">
+          <div className="center-col">
+            <MascotSvg skin={skin} mood="idle" className="play-mascot" />
+            <h1 className="title">Викторина</h1>
+            <p className="subtitle">Сколько вопросов сыграем?</p>
+            <div className="start-options">
+              {QUESTION_COUNTS.map((n) => (
+                <button key={n} className="btn teal" onClick={() => setTotal(n)}>
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="screen-pad">
       <TopBar onBack={() => go("home")} />
       <div className="play-head">
         <MascotSvg skin={skin} mood={mood} className={`play-mascot ${mood}`} />
-        <div className="pill">Вопрос {index + 1}/{TOTAL}</div>
+        <div className="pill">Вопрос {index + 1}/{total}</div>
         <div className="pill">✅ {session.current.correct}</div>
       </div>
 
