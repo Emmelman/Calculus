@@ -6,6 +6,19 @@
  */
 import { product } from "../domain/facts";
 
+/**
+ * Base URL of the helper proxy. Empty in dev and in the installed PWA, so calls
+ * use the relative `/api/...` path that Vite (or a same-origin host) proxies to
+ * the proxy. Builds without that proxy — notably the Android APK — set
+ * `VITE_HELPER_URL` (e.g. "https://host/umnozharium") to reach the hosted proxy.
+ */
+const HELPER_BASE = (import.meta.env.VITE_HELPER_URL ?? "").replace(/\/+$/, "");
+
+/** Absolute helper endpoint, honouring VITE_HELPER_URL when set. */
+function helperUrl(path: string): string {
+  return `${HELPER_BASE}${path}`;
+}
+
 export interface StoryProblem {
   text: string;
   a: number;
@@ -65,7 +78,7 @@ export async function getStoryProblem(
   theme: string,
 ): Promise<StoryProblem> {
   try {
-    const data = await postJson<Partial<StoryProblem>>("/api/helper/story", {
+    const data = await postJson<Partial<StoryProblem>>(helperUrl("/api/helper/story"), {
       a,
       b,
       theme,
@@ -98,7 +111,7 @@ function fallbackExplain(a: number, b: number, hint?: string): string {
  */
 export async function explainFact(a: number, b: number, hint?: string): Promise<string> {
   try {
-    const data = await postJson<{ text?: string }>("/api/helper/explain", { a, b, hint });
+    const data = await postJson<{ text?: string }>(helperUrl("/api/helper/explain"), { a, b, hint });
     if (typeof data.text === "string" && data.text.length > 0) return data.text;
   } catch {
     // fall through
@@ -113,7 +126,7 @@ export async function explainFact(a: number, b: number, hint?: string): Promise<
  */
 export async function askHelper(a: number, b: number, question: string): Promise<string> {
   try {
-    const data = await postJson<{ text?: string }>("/api/helper/ask", { a, b, question });
+    const data = await postJson<{ text?: string }>(helperUrl("/api/helper/ask"), { a, b, question });
     if (typeof data.text === "string" && data.text.length > 0) return data.text;
   } catch {
     // fall through
