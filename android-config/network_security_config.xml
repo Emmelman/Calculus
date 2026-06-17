@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Умножариум APK: trust the self-signed certificate that nginx (:443
+  default_server) presents for the AI-helper proxy. Scoped to the loopback host
+  reached through the SSH tunnel — the APK is built with
+  VITE_HELPER_URL=https://127.0.0.1:<port>/umnozharium, so it only ever talks
+  HTTPS to 127.0.0.1/localhost. System CAs stay trusted as well, so a future
+  domain + Let's Encrypt migration needs no change to the app.
+
+  helper_ca.crt is a copy of the server cert (CN=nikapp-dev, SAN includes
+  127.0.0.1 + localhost). If that server cert is reissued, re-copy it and
+  rebuild the APK — see scripts/android-apply-config.sh and the README.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+        <trust-anchors>
+            <certificates src="@raw/helper_ca"/>
+            <certificates src="system"/>
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
